@@ -25,7 +25,7 @@ class Runner:
 
                Example:
 
-               > runner.py trvx current
+               > python3 runner.py trvx current
 
                >
                             0      1          2      3      4      5      6       7        8
@@ -40,9 +40,9 @@ class Runner:
 
                Examples:
 
-               > runner.py trvx csv
-               > runner.py trvx csv 20151009
-               > runner.py trvx csv 20151009 20171009
+               > python3 runner.py trvx csv
+               > python3 runner.py trvx csv 20151009
+               > python3 runner.py trvx csv 20151009 20171009
 
             3. Collect company-data from specified or unspecified dates and create a simple plot from this (as a .png file).
                Automatically produces and (hopefully) opens the .png file after running. Takes either zero, one or two date
@@ -53,9 +53,9 @@ class Runner:
 
                Examples:
 
-               > runner.py trvx plot
-               > runner.py trvx plot 20151009
-               > runner.py trvx plot 20151009 20171009
+               > python3 runner.py trvx plot
+               > python3 runner.py trvx plot 20151009
+               > python3 runner.py trvx plot 20151009 20171009
 
     """
 
@@ -70,15 +70,11 @@ class Runner:
         self.exchange = 'ose'
         self.exchangeList = self.getExchangeList(self.exchangeURL)
         self.compList = []
-
         for i in self.exchangeList:
             self.compList.append(i[0].lower())
-
         self.handleArgv(sys.argv)
-
         if self.errorCheck:
             raise ValueError(''.join(self.errorList))
-
         self.companyURL = self.getCompanyURL(self.company)
         self.dataURL = self.getDataURL(self.companyURL)
         self.historyURL = self.getHistoryURL(self.dataURL)
@@ -99,7 +95,6 @@ class Runner:
                 os.system("open  %s" % sys.path[0] + '/' + self.plotFilename)
 
     def handleArgv(self, argv):
-
         """
             Method to handle arguments given before running
             TODO: Clean up and minimize. Limit number of if/else
@@ -118,6 +113,14 @@ class Runner:
         else:
             self.errorList.append('Action not recognized. Try csv or plot.')
             self.errorCheck = True
+        self.determineDate(argv)
+
+    def determineDate(self, argv):
+        """
+            Method to determine to-from date. Gets called from method handleArgv.
+            TODO: Clean up and minimize. Limit number of if/else
+        """
+
         if len(argv) > 3:
             if len(argv) is 4:
                 try:
@@ -204,7 +207,6 @@ class Runner:
         r = requests.get(url)
         soup = bs4.BeautifulSoup(r.text, 'lxml')
         table = soup.findAll('a')
-
         for i in table:
             try:
                 if (i.get('href').startswith('paperhistory') and (i.get('href').endswith('csv'))):
@@ -225,7 +227,6 @@ class Runner:
         return dataList
 
     def createCSV(self, list, company='one'):
-
         """ Creates a csv-file of data (from either all available dates or the ones given before running) and saves it as a .csv file. Should automatically open after saving """
 
         stringList = []
@@ -247,8 +248,8 @@ class Runner:
             writer.writerows(stringList)
 
     def plotGraph(self, companyList):
-
-        """ Plots a line-graph from company-data (from either all available dates or the ones given before running) and saves it as a .png file. Should automatically open after saving
+        """
+        Plots a line-graph from company-data (from either all available dates or the ones given before running) and saves it as a .png file. Should automatically open after saving
         TODO: Clean up and remove redundancy.
 
         """
@@ -256,7 +257,6 @@ class Runner:
         stringList = []
         for i in companyList:
             stringList.append(i.split(','))
-
         plotList = []
         dateTime = []
         for i in stringList[1:]:
@@ -265,13 +265,10 @@ class Runner:
             else:
                 data = (i[0], i[6])
                 plotList.append(data)
-
         xs = [str(x[0][0:8]) for x in plotList]
         ys = [float(x[1]) for x in plotList]
-
         for i in xs:
             dateTime.append(pd.to_datetime(str(i)))
-
         if self.fromDate == pd.Timestamp('20000101'):
             self.fromDate = pd.to_datetime(stringList[len(stringList) - 1][0])
         startYear = int(self.fromDate.year)
